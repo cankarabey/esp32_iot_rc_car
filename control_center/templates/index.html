@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control Panel</title>
+    <style>
+        .button { width: 100px; height: 100px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Control Panel</h1>
+
+    <label for="slider">Steering Angle:</label>
+    <input type="range" id="slider" name="steeringAngle" min="-90" max="90" value="0">
+    <p>Value: <span id="sliderValue">0</span></p>
+
+    <label for="slider">Motor Speed:</label>
+    <input type="range" id="sliderSpeed" name="motorSpeed" min="0" max="100" value="0">
+    <p>Value: <span id="motorSpeed">0</span></p>
+
+    <input type="radio" id="choice1" name="motorAction" value="1">
+    <label for="choice1">Go Forward</label><br>
+    <input type="radio" id="choice2" name="motorAction" value="0">
+    <label for="choice2">Stop</label><br>
+    <input type="radio" id="choice3" name="motorAction" value="-1">
+    <label for="choice3">Go Backward</label><br>
+
+    <button id="forwardButton" class="button" 
+        onmousedown="setMotorAction(1)" onmouseup="setMotorAction(0)"
+        ontouchstart="setMotorAction(1)" ontouchend="setMotorAction(0)">Go Forward</button>
+    <br>
+    <button id="backwardButton" class="button" 
+        onmousedown="setMotorAction(-1)" onmouseup="setMotorAction(0)"
+        ontouchstart="setMotorAction(-1)" ontouchend="setMotorAction(0)">Go Backward</button>
+
+
+    <script>
+        document.getElementById("slider").oninput = function() {
+            document.getElementById("sliderValue").innerText = this.value;
+            updateValues();
+        };
+
+        document.getElementById("sliderSpeed").oninput = function() {
+            document.getElementById("motorSpeed").innerText = this.value;
+            updateValues();
+        };
+
+        document.querySelectorAll("input[name='motorAction']").forEach(function(radio) {
+            radio.onchange = updateValues;
+        });
+
+        function setMotorAction(value){
+            let radio = document.querySelector("input[name='motorAction']:checked");
+            if (radio) {
+                radio.value = value;
+            }
+            updateValues();
+        }
+
+        function updateValues() {
+            var sliderValue = document.getElementById("slider").value;
+            var motorSpeed = document.getElementById("sliderSpeed").value;
+            var motorAction = document.querySelector("input[name='motorAction']:checked")?.value;
+
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    steeringAngle: sliderValue,
+                    motorAction: motorAction,
+                    motorSpeed: motorSpeed
+                })
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                console.log(data);
+            });
+        }
+    </script>
+</body>
+</html>
